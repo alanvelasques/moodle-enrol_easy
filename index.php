@@ -82,6 +82,21 @@ if ($mform->get_data()) {
                 exit;
             }
 
+            if($course->used){
+              echo $OUTPUT->header();
+              echo get_string('error_code_used', 'enrol_easy');
+              $mform->display();
+              echo $OUTPUT->footer();
+              exit;
+            }
+
+            //consumindo o codigo de inscrição
+            $dataobj = new stdClass();
+            $dataobj->id = $course->id;
+            $dataobj->used = 1;
+
+            $DB->update_record('enrol_easy', $dataobj);
+
             $plugin->enrol_user($instance, $USER->id, $studentrole->id);
 
             if ($course->group_id) {
@@ -109,4 +124,3 @@ if ($mform->get_data()) {
     echo $OUTPUT->footer();
 
 }
-

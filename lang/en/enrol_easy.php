@@ -44,6 +44,9 @@ $string['enrolenddate_help'] = 'Students will be unable to enroll after this dat
 $string['regenerate_codes'] = 'Regenerate Codes';
 $string['regenerate_codes_help'] = 'Check this and click "Save changes" to re-create all above enrollment codes.';
 
+$string['number_of_codes'] = 'Number of codes';
+$string['number_of_codes_help'] = 'Insert number of string codes you wish generate';
+
 $string['qrenabled'] = 'Enable Enrol via QR Codes';
 $string['qrenableddesc'] = 'Enable Enrol via QR Codes';
 
@@ -59,3 +62,4 @@ $string['error_disabled_global'] = 'Easy enrollment is disabled for this course.
 $string['error_enrolstartdate'] = 'Enrollment has not begin for this course yet.';
 $string['error_enrolenddate'] = 'Enrollment for this course has ended.';
 $string['error_invalid_code'] = 'Invalid enrollment code.';
+$string['error_code_used'] = 'Code already used.';

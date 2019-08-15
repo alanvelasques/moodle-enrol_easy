@@ -7,7 +7,7 @@ function xmldb_enrol_apply_upgrade($oldversion) {
 	global $CFG, $DB;
 	$dbman = $DB->get_manager();
 
-    if ($oldversion < XXXXXXXXXX) {
+    if ($oldversion < 2018090600) {
 
         // Define table enrol_easy to be created.
         $table = new xmldb_table('enrol_easy');
@@ -27,12 +27,32 @@ function xmldb_enrol_apply_upgrade($oldversion) {
         }
 
         // Easy savepoint reached.
-        upgrade_plugin_savepoint(true, XXXXXXXXXX, 'enrol', 'easy');
+        upgrade_plugin_savepoint(true, 2018090600, 'enrol', 'easy');
     }
 
 	return true;
 
 }
 function xmldb_enrol_easy_upgrade($oldversion) {
+
+		global $CFG, $DB;
+		$dbman = $DB->get_manager();
+
+		if ($oldversion < 2019071505) {
+
+				// Define table enrol_easy to be created.
+				$table = new xmldb_table('enrol_easy');
+
+				// Adding fields to table enrol_easy.
+				$field = new xmldb_field('used', XMLDB_TYPE_INTEGER, '1', null, null, null, null);
+
+				// Conditionally launch create table for enrol_easy.
+				if (!$dbman->field_exists($table, $field)) {
+						$dbman->add_field($table, $field, $continue=true, $feedback=true);
+				}
+
+				// Easy savepoint reached.
+				upgrade_plugin_savepoint(true, 2019071505, 'enrol', 'easy');
+		}
     return true;
 }

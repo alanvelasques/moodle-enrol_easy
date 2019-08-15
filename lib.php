@@ -49,7 +49,7 @@ class enrol_easy_plugin extends enrol_plugin {
             'component' => array(
                 'main_javascript' => new moodle_url('/enrol/easy/js/enrol_easy.js'),
                 'jquery' => new moodle_url('/enrol/easy/js/jquery-3.2.0.min.js'),
-  
+
             ),
             'config' => array(
                 'qrenabled' => !isMobile() && $this->get_config('qrenabled')
@@ -124,47 +124,51 @@ class enrol_easy_plugin extends enrol_plugin {
 
         $mform->addElement('header', 'nameforyourheaderelement', get_string('header_coursecodes', 'enrol_easy'));
 
+
         $allcodesobj = $DB->get_records('enrol_easy');
         $allcodes = array();
 
         foreach($allcodesobj as $c) {
             $allcodes[] = $c;
         }
-
         $code = $DB->get_records('enrol_easy', array('course_id' => $COURSE->id, 'group_id' => null));
+        // print_r($code);
+        // exit;
+        // if ($code && (count($code) > 1)) {
+        //     $DB->delete_records('enrol_easy', array('course_id' => $COURSE->id, 'group_id' => null, 'used' => null));
+        //     $code = NULL;
+        // }
+        // else {
+        //     $code = array_pop($code);
+        // }
 
-        if ($code && (count($code) > 1)) {
-            $DB->delete_records('enrol_easy', array('course_id' => $COURSE->id, 'group_id' => null));
-            $code = NULL;
+        // if (!$code) {
+        //     $code = randomstring(10);
+        //
+        //     while (array_key_exists($code, $allcodes)) {
+        //         $code = randomstring(10);
+        //     }
+        //
+        //     $dataobj = new stdClass();
+        //     $dataobj->course_id = $COURSE->id;
+        //     $dataobj->enrolmentcode = $code;
+        //     $DB->insert_record('enrol_easy', $dataobj);
+        //
+        //     $allcodes[] = $code;
+        //
+        // }
+        // else {
+        //     $code = $code->enrolmentcode;
+        // }
+
+        foreach ($code as $onecode) {
+          print_r($onecode);
+          $codetext = $mform->addElement('text', 'course_' . $COURSE->id. '_' . $onecode->enrolmentcode, 'Course: ' . $COURSE->fullname, array('readonly' => ''));
+          $mform->setType('course_' . $COURSE->id . '_' . $onecode->enrolmentcode, PARAM_NOTAGS);
+          $mform->setDefault('course_' . $COURSE->id . '_' . $onecode->enrolmentcode,  $onecode->enrolmentcode);
+          $mform->updateElementAttr('course_' . $COURSE->id . '_' . $onecode->enrolmentcode, array('data-type' => 'enroleasycode')); // For whatever reason it refuses to set a class, so data attr it is.
+          $mform->updateElementAttr('course_' . $COURSE->id . '_' . $onecode->enrolmentcode, array('data-coursename' => $COURSE->fullname));
         }
-        else {
-            $code = array_pop($code);
-        }
-
-        if (!$code) {
-            $code = randomstring(6);
-
-            while (array_key_exists($code, $allcodes)) {
-                $code = randomstring(6);
-            }
-
-            $dataobj = new stdClass();
-            $dataobj->course_id = $COURSE->id;
-            $dataobj->enrolmentcode = $code;
-            $DB->insert_record('enrol_easy', $dataobj);
-
-            $allcodes[] = $code;
-
-        }
-        else {
-            $code = $code->enrolmentcode;
-        }
-
-        $codetext = $mform->addElement('text', 'course_' . $COURSE->id, 'Course: ' . $COURSE->fullname, array('readonly' => ''));
-        $mform->setType('course_' . $COURSE->id, PARAM_NOTAGS);
-        $mform->setDefault('course_' . $COURSE->id,  $code);
-        $mform->updateElementAttr('course_' . $COURSE->id, array('data-type' => 'enroleasycode')); // For whatever reason it refuses to set a class, so data attr it is.
-        $mform->updateElementAttr('course_' . $COURSE->id, array('data-coursename' => $COURSE->fullname));
 
         $groups = $DB->get_records('groups', array('courseid' => $COURSE->id));
 
@@ -186,10 +190,10 @@ class enrol_easy_plugin extends enrol_plugin {
             }
 
             if (!$code) {
-                $code = randomstring(6);
+                $code = randomstring(10);
 
                 while (array_key_exists($code, $allcodes)) {
-                    $code = randomstring(6);
+                    $code = randomstring(10);
                 }
 
                 $dataobj = new stdClass();
@@ -217,6 +221,11 @@ class enrol_easy_plugin extends enrol_plugin {
         $mform->setDefault('regenerate_codes', $this->get_config('regenerate_codes'));
         $mform->addHelpButton('regenerate_codes', 'regenerate_codes', 'enrol_easy');
 
+        $mform->addElement('text', 'number_of_codes', get_string('number_of_codes', 'enrol_easy'));
+        $mform->setType('number_of_codes', PARAM_NOTAGS);
+        $mform->setDefault('number_of_codes', $this->get_config('number_of_codes'));
+        $mform->addHelpButton('number_of_codes', 'number_of_codes', 'enrol_easy');
+
 
         if ($this->get_config('qrenabled')) {
 
@@ -232,7 +241,7 @@ class enrol_easy_plugin extends enrol_plugin {
     }
     public function get_instance_defaults() {
         $fields = array();
-        
+
         return $fields;
     }
     public function edit_instance_validation($data, $files, $instance, $context) {
@@ -255,28 +264,45 @@ class enrol_easy_plugin extends enrol_plugin {
         }
 
         if ($data->regenerate_codes) {
-
-            foreach($enrolmentcodes as $enrolmentcode) {
-
-                $code = randomstring(6);
+            if($data->number_of_codes){
+              for($i=0;$i<$data->number_of_codes;$i++){
+                $code = randomstring(10);
 
                 while (array_key_exists($code, $allcodes)) {
-                    $code = randomstring(6);
+                    $code = randomstring(10);
                 }
 
                 $dataobj = new stdClass();
-                $dataobj->id = $enrolmentcode->id;
+                $dataobj->course_id = $instance->courseid;
+                $dataobj->group_id = null;
                 $dataobj->enrolmentcode = $code;
+                $dataobj->used = null;
 
                 $allcodes[] = $code;
-                $DB->update_record('enrol_easy', $dataobj);
+                $DB->insert_record('enrol_easy', $dataobj);
+              }
+            }else{
+              foreach($enrolmentcodes as $enrolmentcode) {
 
+                  $code = randomstring(10);
+
+                  while (array_key_exists($code, $allcodes)) {
+                      $code = randomstring(10);
+                  }
+
+                  $dataobj = new stdClass();
+                  $dataobj->id = $enrolmentcode->id;
+                  $dataobj->enrolmentcode = $code;
+
+                  $allcodes[] = $code;
+                  $DB->update_record('enrol_easy', $dataobj);
+
+              }
             }
 
         }
         parent::update_instance($instance, $data);
         header('Location: ' . $data->returnurl);
-        exit;
     }
 
     public function add_instance($course, array $fields = null) {
@@ -327,7 +353,7 @@ class enrol_easy_plugin extends enrol_plugin {
     public function enrol_course_delete($course) {
 
         $enrolmentcodes = $DB->delete_records('enrol_easy', array('course_id' => $course->id));
-    
+
         parent::enrol_course_delete($course);
 
     }
