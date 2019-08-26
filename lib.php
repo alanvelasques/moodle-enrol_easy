@@ -161,8 +161,7 @@ class enrol_easy_plugin extends enrol_plugin {
         //     $code = $code->enrolmentcode;
         // }
 
-        foreach ($code as $onecode) {
-          print_r($onecode);
+        foreach ($code as $onecode) {          
           $codetext = $mform->addElement('text', 'course_' . $COURSE->id. '_' . $onecode->enrolmentcode, 'Course: ' . $COURSE->fullname, array('readonly' => ''));
           $mform->setType('course_' . $COURSE->id . '_' . $onecode->enrolmentcode, PARAM_NOTAGS);
           $mform->setDefault('course_' . $COURSE->id . '_' . $onecode->enrolmentcode,  $onecode->enrolmentcode);
